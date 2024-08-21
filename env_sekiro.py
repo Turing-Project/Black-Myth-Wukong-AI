@@ -20,6 +20,7 @@ class Sekiro(object):
 
         # self.obs_window = (379,160,675,500) # 显示器
         self.obs_window =  (354,180,695,521) # 笔记本
+        
         # 351 66 683 530
         # 399 211 651 480
         # self.obs_window = (400,120,669,471)
@@ -27,12 +28,15 @@ class Sekiro(object):
         # self.blood_window = (104,128,621,863) #2560*1600笔记本屏幕分辨率，为--画质下
         # self.blood_window = (121,130,738,1013) #我的2560*1440显示器分辨率 为1920*1080画质下 捏吗这个卡昏了 别用
         # self.blood_window = (68,84,398,554)  #显示器1024*576
-        self.boss_blood_window = (71,95,287,99)  #笔记本1024*576
-        self.sekiro_blood_window = (75,567,396,570)  #笔记本1024*576
+        # self.boss_blood_window = (71,95,287,99)  #笔记本1024*576
+        self.boss_blood_window = (510,692,780,702)# 黑神话
+        # self.sekiro_blood_window = (75,567,396,570)  #笔记本1024*576
+        self.sekiro_blood_window = (138,737,327,752)  #黑神话 
         # self.stamina_window = (351,66,683,530) #显示器
         # self.blood_window = (103,113,605,848)  # 显示器 1600*900
         self.boss_stamina_window = (345,78,690,81) #笔记本
-        self.sekiro_stamina_window = (426,542,626,545) #笔记本
+        # self.sekiro_stamina_window = (426,542,626,545) #笔记本
+        self.sekiro_stamina_window = (1128,725,1158,779)
         # self.stamina_window = (549,86,1074,88)  # 显示器1600*900`
 
         self.boss_blood = 0
@@ -44,32 +48,32 @@ class Sekiro(object):
         self.emergence_break = 0
 
     def self_blood_count(self, sekiro_blood_hsv_img):
-        lower_red = np.array([0, 120, 70])
-        upper_red = np.array([10, 255, 255])
-        mask = cv2.inRange(sekiro_blood_hsv_img, lower_red, upper_red)
-        red_pixel_count = cv2.countNonZero(mask)
-        return red_pixel_count
+        lower_white = np.array([0, 0, 180])
+        upper_white = np.array([360, 30, 220])
+        mask = cv2.inRange(sekiro_blood_hsv_img, lower_white, upper_white)
+        white_pixel_count = cv2.countNonZero(mask)
+        return white_pixel_count
 
     def boss_blood_count(self, boss_blood_hsv_img):
-        lower_red = np.array([0, 120, 70])
-        upper_red = np.array([10, 255, 255])
-        mask = cv2.inRange(boss_blood_hsv_img, lower_red, upper_red)
-        red_pixel_count = cv2.countNonZero(mask)
-        return red_pixel_count
+        lower_white = np.array([0, 0, 180])
+        upper_white = np.array([360, 30, 220])
+        mask = cv2.inRange(boss_blood_hsv_img, lower_white, upper_white)
+        white_pixel_count = cv2.countNonZero(mask)
+        return white_pixel_count
 
     def self_stamina_count(self, self_stamina_hsv_img):
-        lower_orange = np.array([15, 100, 100])
-        upper_orange = np.array([30, 255, 255])
-        mask = cv2.inRange(self_stamina_hsv_img, lower_orange, upper_orange)
-        orange_pixel_count = cv2.countNonZero(mask)
-        return orange_pixel_count
+        lower_white = np.array([0, 0, 180])
+        upper_white = np.array([360, 30, 220])
+        mask = cv2.inRange(self_stamina_hsv_img, lower_white, upper_white)
+        white_pixel_count = cv2.countNonZero(mask)
+        return white_pixel_count
 
     def boss_stamina_count(self, boss_stamina_hsv_img):
-        lower_orange = np.array([15, 100, 100])
-        upper_orange = np.array([30, 255, 255])
-        mask = cv2.inRange(boss_stamina_hsv_img, lower_orange, upper_orange)
-        orange_pixel_count = cv2.countNonZero(mask)
-        return orange_pixel_count
+        lower_white = np.array([0, 0, 180])
+        upper_white = np.array([360, 30, 220])
+        mask = cv2.inRange(boss_stamina_hsv_img, lower_white, upper_white)
+        white_pixel_count = cv2.countNonZero(mask)
+        return white_pixel_count
     
     def take_action(self, action):
         if action == 0: #j
@@ -310,6 +314,24 @@ class Sekiro(object):
         # self.self_stamina = self.self_stamina_count(boss_stamina_hsv_img)
         return obs
 
+def boss_blood_count(boss_blood_hsv_img):
+    lower_white = np.array([0, 0, 180])
+    upper_white = np.array([360, 30, 220])
+    mask = cv2.inRange(boss_blood_hsv_img, lower_white, upper_white)
+    white_pixel_count = cv2.countNonZero(mask)
+    return white_pixel_count
+def hsv_test(image):
+    hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_value = hsv_img[1,1]
+    print(hsv_value)
+
+def self_stamina_count(self_stamina_hsv_img):
+    lower_white = np.array([0, 0, 180])
+    upper_white = np.array([360, 30, 220])
+    mask = cv2.inRange(self_stamina_hsv_img, lower_white, upper_white)
+    white_pixel_count = cv2.countNonZero(mask)
+    return white_pixel_count
+
 if __name__ == "__main__":
     env = Sekiro(observation_w=100, observation_h=200, action_dim=5)
     # while True:
@@ -318,14 +340,26 @@ if __name__ == "__main__":
     width = 200
     height = 175
     obs_window = (389,135,704,525) # 笔记本
-    boss_blood_window = (71,95,287,99)  #笔记本1024*576
-    sekiro_blood_window = (75,567,396,570)  #笔记本1024*576
-    boss_stamina_window  = (345,78,690,81) #笔记本
-    sekiro_stamina_window = (426,542,626,545) #笔记本
-    obs_screen = grab_screen(obs_window)
-    obs_resize = cv2.resize(obs_screen,(width,height))
-    obs = np.array(obs_resize).reshape(-1,height,width,4)[0]
-    obs = 1
+    boss_blood_window = (510,692,774,701)# 黑神话
+    sekiro_blood_window = (138,737,327,752)  #黑神话 
+    # boss_stamina_window  = (345,78,690,81) #笔记本
+    sekiro_stamina_window = (1128,725,1158,779)
+    # obs_screen = grab_screen(obs_window)
+    # obs_resize = cv2.resize(obs_screen,(width,height))
+    # obs = np.array(obs_resize).reshape(-1,height,width,4)[0]
+    # obs = 1
+    while True:
+        # boss_blood_img = grab_screen(boss_blood_window)
+        # boss_blood_hsv_img = cv2.cvtColor(boss_blood_img, cv2.COLOR_BGR2HSV)
+        # boss_blood = boss_blood_count(boss_blood_hsv_img)
+        # print(boss_blood)
+        # time.sleep(0.5)
+        
+        sekiro_stamina_img = grab_screen(sekiro_stamina_window)
+        sekiro_stamina_hsv_img = cv2.cvtColor(sekiro_stamina_img, cv2.COLOR_BGR2HSV)
+        self_stamina = self_stamina_count(sekiro_stamina_hsv_img)
+        print(self_stamina)
+
 
 
 
