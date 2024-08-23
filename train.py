@@ -4,7 +4,6 @@ import torch
 import torch.optim as optim
 import argparse
 
-from resnet18 import res18
 # from efficientnet import efficientnet
 from d3qnnew import dqn_learning, OptimizerSpec
 #from utils.atari_wrappers import *
@@ -25,7 +24,7 @@ LEARNING_FREQ = 4
 LEARNING_RATE = 0.001
 ALPHA = 0.90
 EPS = 0.0005
-EXPLORATION_SCHEDULE = LinearSchedule(1000, 0.05)
+EXPLORATION_SCHEDULE = LinearSchedule(300, 0.05)
 LEARNING_STARTS = 0 # 1086 一个奇怪的数字让训练时跳过更新过程，不训练只输出
 CHECKPOINT = 0
 
@@ -44,7 +43,6 @@ def sekiro_learn(env, env_id, double_dqn, dueling_dqn, checkpoint):
     dqn_learning(
         env=env,
         env_id=env_id,
-        q_func=res18,
         optimizer_spec=optimizer,
         exploration=EXPLORATION_SCHEDULE,
         stopping_criterion=None,
@@ -86,7 +84,7 @@ def main():
     double_dqn = (args.double_dqn == 1)
     dueling_dqn = (args.dueling_dqn == 1)
     checkpoint = args.checkpoint
-    env = Sekiro(observation_w=175, observation_h=200, action_dim=6)
+    env = Sekiro(observation_w=175, observation_h=200, action_dim=4)
     print("double_dqn %d, dueling_dqn %d" %(double_dqn, dueling_dqn))
     sekiro_learn(env, 4, double_dqn=double_dqn, dueling_dqn=dueling_dqn, checkpoint=0) #此处load模型
 

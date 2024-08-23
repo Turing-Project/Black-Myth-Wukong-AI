@@ -12,12 +12,11 @@ import random
 from collections import namedtuple
 from replay_buffer import *
 from schedules import *
-from resnet18 import res18
 from dqn_net3 import Q_construct
 import matplotlib.pyplot as plt
 import torch.nn as nn
 import torch.optim as optim
-from ResNet_player_model import ResNet50_player
+from ResNet_boss_model import ResNet50_boss
 # from efficientnet import *
 # from utils.gym_setup import *
 # from logger import Logger
@@ -45,20 +44,18 @@ def to_np(x):
     return x.data.cpu().numpy() 
 # 状态对应
 index_to_label = {
-    0:'下砍',
-    1:'突刺危',
-    2:'横砍',
-    3:'翻滚下劈',
-    4:'跳劈',
-    5:'飞渡',
-    6:'射箭',
-    7:'下段危',
-    8:'冲刺扫',
-    9:'其他' 
+    0:'冲刺砍',
+    1:'旋转飞',
+    2:'扔刀',
+    3:'飞雷神',
+    4:'锄地',
+    5:'锄地起飞',
+    6:'普攻',
+    7:'大荒星陨',
+    8:'观察', 
 }
 def dqn_learning(env,
           env_id,
-          q_func,
           optimizer_spec,
           exploration=LinearSchedule(1000, 0.1), #此处和buffer的100原先是1000
           stopping_criterion=None,
@@ -87,9 +84,9 @@ def dqn_learning(env,
 
     num_actions = env.action_dim
 
-    model_resnet_boss = ResNet50_player(num_classes=10)
+    model_resnet_boss = ResNet50_boss(num_classes=9)
     # # 加载已训练好的模型
-    model_resnet_boss.load_state_dict(torch.load('D:/d3qn_sekiro/RL-ARPG-Agent-3/player_model.pkl'))
+    model_resnet_boss.load_state_dict(torch.load('D:/dqn_wukong/RL-ARPG-Agent-1/boss_model.pkl'))
     model_resnet_boss.to(device)
     model_resnet_boss.eval()
     # model_resnet_sekiro = torch.load('resnet_model_sekiro_round11_0.pth')
@@ -140,7 +137,7 @@ def dqn_learning(env,
             add_str = 'double' 
         if (dueling_dqn):
             add_str = 'dueling'
-        checkpoint_path = "models/real_ulti4_0810_2400.pth"
+        checkpoint_path = "models/wukong_0823_3_900.pth"
         Q.load_state_dict(torch.load(checkpoint_path))
         Q_target.load_state_dict(torch.load(checkpoint_path))
         print('load model success')
@@ -201,7 +198,7 @@ def dqn_learning(env,
             threshold = exploration.value(t)
             if sample > threshold:
                 obs = torch.from_numpy(observations).unsqueeze(0).type(dtype) # 1,4,175,200
-                obs = obs[:,:3,20:180,5:165]# 1,3,128,128
+                obs = obs[:,:3,:,5:165]# 1,3,128,128
                 # obs = obs.flip(dims = (1,))# 1,3,128,128
                 # array2 = obs.squeeze() # 3,128,128
                 # array2 = array2.permute(1,2,0) # 128,128,3
@@ -214,14 +211,12 @@ def dqn_learning(env,
                 output_boss,intermediate_results_boss = model_resnet_boss(obs)
                 max_values_boss, indices_boss = torch.max(output_boss, dim=1)
                 print("boss状态:",index_to_label[indices_boss.item()])
-                if indices_boss.item() == 1: # 突刺
-                    action = torch.tensor([2])
-                # elif indices_boss.item() == 4: # 跳劈
-                #     action = torch.tensor([1])
-                # elif indices_boss.item() == 5: # 飞渡
-                #     action = torch.tensor([9])
-                # elif indices_boss.item() == 7: # 下段危
-                #     action = torch.tensor([3])
+                if indices_boss.item() == 4: # 锄地
+                    action = torch.tensor([1])
+                elif indices_boss.item() == 5: # 锄地起飞
+                    action = torch.tensor([1])
+                elif indices_boss.item() == 6: # 普攻
+                    action = torch.tensor([1])
                 else:
                     q_value_all_actions= Q(intermediate_results_boss)
                     q_value_all_actions = q_value_all_actions.cpu()
@@ -243,10 +238,6 @@ def dqn_learning(env,
                 action = torch.IntTensor([[np.random.randint(num_actions)]])[0][0]
         # print("即将和环境互动")
         obs, reward, done, stop, emergence_break, end_defense = env.step(action,is_defending)
-        if action == 9: # 把防飞渡处理成防御
-            action = 1
-        if action == 3: # 把防下段危的跳处理成防御
-            action = 1
         if reward_cnt % 30 == 0:
             reward_10 += reward
             writer.add_scalars("reward",{"reward_10":  reward_10},(reward_cnt) / 30)        
@@ -294,13 +285,13 @@ def dqn_learning(env,
             # print("即将从Buffer中取出")
             obs_t, act_t, rew_t, obs_tp1, done_mask = replay_buffer.sample(batch_size)      # 2,4,175,200
             obs_t = torch.tensor(obs_t, dtype=torch.float32)
-            obs_t = obs_t[:,:3,20:180,5:165]
+            obs_t = obs_t[:,:3,:,5:165]
             # obs_t = obs_t.flip(dims = (1,))
             obs_t = obs_t.to(device)
             act_t = torch.tensor(act_t, dtype=torch.long).to(device)
             rew_t = torch.tensor(rew_t, dtype=torch.float32).to(device)
             obs_tp1 = torch.tensor(obs_tp1, dtype=torch.float32)
-            obs_tp1 = obs_tp1[:,:3,20:180,5:165]
+            obs_tp1 = obs_tp1[:,:3,:,5:165]
             # obs_tp1 = obs_tp1.flip(dims = (1,))
             obs_tp1 = obs_tp1.to(device)
             done_mask = torch.tensor(done_mask, dtype=torch.float32).to(device)
@@ -436,7 +427,7 @@ def dqn_learning(env,
                 add_str = 'double' 
             if (dueling_dqn):
                 add_str = 'dueling'
-            model_save_path = "models/real_ulti4_0815_%d.pth" %(t)
+            model_save_path = "models/wukong_0823_4_%d.pth" %(t)
             torch.save(Q.state_dict(), model_save_path)
             # model_resnet_boss_path = "models_res/ulti_boss_%s_%s_%d.pth" %(str(env_id), add_str, t)
             # torch.save(model_resnet_boss.state_dict(), model_resnet_boss_path)
