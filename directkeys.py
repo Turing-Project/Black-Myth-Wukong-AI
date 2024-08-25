@@ -95,10 +95,11 @@ def light_attack():
     time.sleep(0.6)
     
 def hard_attack():
+    time.sleep(0.3)
     PressKey(M)
     time.sleep(0.1)
     ReleaseKey(M)
-    time.sleep(3.0)
+    time.sleep(2.0)
     
 def hard_attack_long():
     PressKey(M)
@@ -135,6 +136,17 @@ def silian():
     light_attack()
     light_attack()
     
+def left_dodge():
+    PressKey(A)
+    dodge()
+    ReleaseKey(A)
+
+def right_dodge():
+    PressKey(D)
+    dodge()
+    ReleaseKey(D)
+
+    
 if __name__ == '__main__':
     time.sleep(2)
     # time1 = time.time()
@@ -156,8 +168,6 @@ if __name__ == '__main__':
     # dodge()22222222
     # PressKey(M)
     light_attack()
-    light_attack()
-    light_attack()
-    light_attack()
-    time.sleep(0.5)
+    hard_attack()
+    left_dodge()
     light_attack()

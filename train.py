@@ -24,8 +24,8 @@ LEARNING_FREQ = 4
 LEARNING_RATE = 0.001
 ALPHA = 0.90
 EPS = 0.0005
-EXPLORATION_SCHEDULE = LinearSchedule(300, 0.05)
-LEARNING_STARTS = 0 # 1086 一个奇怪的数字让训练时跳过更新过程，不训练只输出
+EXPLORATION_SCHEDULE = LinearSchedule(800, 0.05)
+LEARNING_STARTS = 1086 # 1086 一个奇怪的数字让训练时跳过更新过程，不训练只输出
 CHECKPOINT = 0
 
 # torch.cuda.set_device(0)
@@ -86,7 +86,7 @@ def main():
     checkpoint = args.checkpoint
     env = Sekiro(observation_w=175, observation_h=200, action_dim=4)
     print("double_dqn %d, dueling_dqn %d" %(double_dqn, dueling_dqn))
-    sekiro_learn(env, 4, double_dqn=double_dqn, dueling_dqn=dueling_dqn, checkpoint=0) #此处load模型
+    sekiro_learn(env, 4, double_dqn=double_dqn, dueling_dqn=dueling_dqn, checkpoint=1) #此处load模型
 
 if __name__ == '__main__':
     main()

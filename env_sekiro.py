@@ -76,12 +76,14 @@ class Sekiro(object):
     
     def take_action(self, action):
         if action == 0: #j
-            directkeys.erlian()
+            directkeys.light_attack()
         elif action == 1: #m
-            directkeys.dodge()
+            directkeys.left_dodge()
         elif action == 2:
             directkeys.sanlian()
         elif action == 3:
+            directkeys.right_dodge()
+        elif action == 4:
             directkeys.hard_attack()
         
         #elif action == 4: #r_back
@@ -95,55 +97,56 @@ class Sekiro(object):
         
     def get_reward(self, boss_blood, next_boss_blood, self_blood, next_self_blood, 
                    boss_stamina, next_boss_stamina, self_stamina, next_self_stamina, 
-                   stop, emergence_break,action):
-        end_defense = False
+                   stop, emergence_break,action,boss_attack):
         print(next_self_blood,boss_blood)
-        if next_self_blood < 30:     # self dead
+        if next_self_blood < 50:     # self dead
             print("dead")
-            end_defense = True
             # print("快死了，当前血量：",self_blood,"马上血量：",next_self_blood)
             if emergence_break < 2:
-                reward = -100
+                reward = -6
                 done = 1
                 stop = 0
                 emergence_break += 1
-                # pyautogui.keyDown('D')
-                # directkeys.dodge()
-                # directkeys.dodge()
-                # directkeys.dodge()
-                # time.sleep(0.2)
-                # pyautogui.press('R')
-                # time.sleep(1)
-                # pyautogui.press('R')
-                # pyautogui.press('R')
-                # pyautogui.keyUp('D')
-                pyautogui.keyDown('num2')
-                pyautogui.keyDown('num2')
-                pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
+                # time.sleep(3)
+                print("后跳并喝血")
+                pyautogui.keyDown('S')
+                directkeys.dodge()
+                directkeys.dodge()
+                directkeys.dodge()
+                time.sleep(0.2)
+                pyautogui.press('R')
                 time.sleep(1)
-                pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
-                return reward, done, stop, emergence_break,end_defense
+                pyautogui.press('R')
+                pyautogui.press('R')
+                pyautogui.keyUp('S')
+                # pyautogui.keyDown('num2')
+                # pyautogui.keyDown('num2')
+                # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
+                # time.sleep(1)
+                # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
+                return reward, done, stop, emergence_break
             else:
-                reward = -100
+                reward = -6
                 done = 1
                 stop = 0
                 emergence_break = 100
-                pyautogui.keyDown('num2')
-                pyautogui.keyDown('num2')
-                pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
-                time.sleep(1)
-                pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
-                # pyautogui.keyDown('D')
-                # directkeys.dodge()
-                # directkeys.dodge()
-                # directkeys.dodge()
-                # time.sleep(0.2)
-                # pyautogui.press('R')
+                # pyautogui.keyDown('num2')
+                # pyautogui.keyDown('num2')
+                # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
                 # time.sleep(1)
-                # pyautogui.press('R')
-                # pyautogui.press('R')
-                # pyautogui.keyUp('D')
-                return reward, done, stop, emergence_break,end_defense
+                # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
+                print("后跳并喝血")
+                pyautogui.keyDown('S')
+                directkeys.dodge()
+                directkeys.dodge()
+                directkeys.dodge()
+                time.sleep(0.2)
+                pyautogui.press('R')
+                time.sleep(1)
+                pyautogui.press('R')
+                pyautogui.press('R')
+                pyautogui.keyUp('S')
+                return reward, done, stop, emergence_break
         # elif next_boss_blood - boss_blood > 70 and boss_blood < 10:   #boss dead
         #     print("boss死了")
         #     if emergence_break < 2:
@@ -165,21 +168,21 @@ class Sekiro(object):
             boss_blood_reward = 0
             self_stamina_reward = 0
             boss_stamina_reward = 0
-            if action == 0: # 二连
-                reward  += 0
-            elif action == 1: # 闪避
-                reward += 0
-            elif action == 2: # 三连
-                reward += 0
-            elif action == 3: # 重棍
-                reward -= 10;
+            # if action == 0: # 二连
+            #     reward  += 0
+            # elif action == 1: # 闪避
+            #     reward += 0
+            # elif action == 2: # 三连
+            #     reward += 0
+            # elif action == 3: # 重棍
+            #     reward -= 1;
             # print(next_self_blood - self_blood)
             # print(next_boss_blood - boss_blood)
             
             # 自己掉血扣分
             if next_self_blood - self_blood < -5:
                 # if stop == 0:
-                self_blood_reward = (next_self_blood - self_blood)
+                self_blood_reward = (next_self_blood - self_blood) //10
                 print("掉血惩罚")
                 end_defense = True
                 # stop = 1
@@ -190,14 +193,17 @@ class Sekiro(object):
             # 打掉boss血加分
             if next_boss_blood - boss_blood <= -18:
                 print("打掉boss血而奖励")
-                boss_blood_reward = (boss_blood - next_boss_blood)
-                boss_blood_reward = min(boss_blood_reward,250)
+                boss_blood_reward = (boss_blood - next_boss_blood) // 10
+                boss_blood_reward = min(boss_blood_reward,10)
             # print("self_blood_reward:    ",self_blood_reward)
             # print("boss_blood_reward:    ",boss_blood_reward)
             # 成功防御加分
-            if action == 1 and next_self_stamina - self_stamina >= 7 and next_self_blood-self_blood == 0:
+            if (action == 1 or action == 3) and boss_attack == True and next_self_stamina - self_stamina >= 7 and next_self_blood-self_blood == 0:
                 print("完美闪避奖励")
-                self_stamina_reward = 20
+                self_stamina_reward += 2
+            elif (action == 1 or action == 3) and boss_attack == True and next_self_blood-self_blood == 0:
+                print("成功闪避")
+                self_stamina_reward += 0.5
             # boss架势值增加加分
             #如果什么都没做，进行惩罚
             reward = reward + self_blood_reward * 0.8 + boss_blood_reward * 1.2 + self_stamina_reward * 1.0 + boss_stamina_reward * 1.0
@@ -205,16 +211,18 @@ class Sekiro(object):
             emergence_break = 0
             # if(reward != -0.5):
             #     print("Reward of this round is:", reward)        
-            return reward, done, stop, emergence_break,end_defense
+            return reward, done, stop, emergence_break
 
-    def step(self, action, is_defending):
+    def step(self, action, boss_attack):
         if(action == 0):
-            print("二连")
+            print("一连")
         elif(action == 1):
-            print("闪避")
+            print("左闪避")
         elif(action == 2):
             print("三连")
         elif action == 3:
+            print("右闪避")
+        elif action == 4:
             print("重棍")
         self.take_action(action)
         
@@ -250,15 +258,15 @@ class Sekiro(object):
         
         # print("只狼血量：",next_self_blood,"    boss血量：",next_boss_blood)
         # print("只狼架势条：",next_self_stamina,"    boss架势条：",next_boss_stamina)
-        reward, done, stop, emergence_break,end_defense = self.get_reward(self.boss_blood, next_boss_blood, self.self_blood, next_self_blood, 
+        reward, done, stop, emergence_break = self.get_reward(self.boss_blood, next_boss_blood, self.self_blood, next_self_blood, 
                    self.boss_stamina, next_boss_stamina, self.self_stamina, next_self_stamina, 
-                   self.stop, self.emergence_break,action)
+                   self.stop, self.emergence_break,action,boss_attack)
         self.self_blood = next_self_blood
         self.boss_blood = next_boss_blood
         self.self_stamina = next_self_stamina
         self.boss_stamina = next_boss_stamina
         #reward += loss_reward
-        return (obs, reward, done, stop, emergence_break,end_defense)
+        return (obs, reward, done, stop, emergence_break)
         
 
     def pause_game(self,paused):
@@ -350,6 +358,13 @@ def self_blood_count(obs_gray):
     value = canny_edges.argmax(axis=-1)
     return np.max(value)
 
+def self_power_count(self_power_hsv_img):
+    lower_white = np.array([0, 0, 220])
+    upper_white = np.array([360, 45, 256])
+    mask = cv2.inRange(self_power_hsv_img, lower_white, upper_white)
+    white_pixel_count = cv2.countNonZero(mask)
+    return white_pixel_count
+
 if __name__ == "__main__":
     env = Sekiro(observation_w=100, observation_h=200, action_dim=5)
     # while True:
@@ -362,17 +377,30 @@ if __name__ == "__main__":
     sekiro_blood_window = (138,738,243,749)  #黑神话 
     # boss_stamina_window  = (345,78,690,81) #笔记本
     sekiro_stamina_window = (1128,725,1158,779)
-    directkeys.hard_attack_long()
-    directkeys.light_attack()
+    # pyautogui.keyDown('num2')
+    # pyautogui.keyDown('num2')
+    # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
+    # time.sleep(1)
+    # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
+    # time.sleep(0.5)
+    # pyautogui.keyDown('num2')
+    # pyautogui.keyDown('num2')
+    # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
+    # time.sleep(1)
+    # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
     # obs_screen = grab_screen(obs_window)
     # obs_resize = cv2.resize(obs_screen,(width,height))
     # obs = np.array(obs_resize).reshape(-1,height,width,4)[0]
     # obs = 1
     # while True:
-    #     boss_blood_img = grab_screen(boss_blood_window)
-    #     boss_blood_hsv_img = cv2.cvtColor(boss_blood_img, cv2.COLOR_BGR2HSV)
-    #     boss_blood = boss_blood_count(boss_blood_hsv_img)
-    #     print(boss_blood)
+    while True:
+        self_power_window = (1194,752,1220,780)
+        # self_power_window = (1209,756,1211,758)
+        self_power_img = grab_screen(self_power_window)
+        # hsv_test(self_power_img)
+        self_power_hsv = cv2.cvtColor(self_power_img, cv2.COLOR_BGR2HSV)
+        self_power = self_power_count(self_power_hsv)
+        print(self_power)
     #     time.sleep(0.5)
         # sekiro_blood_img = grab_screen(sekiro_blood_window)
         # # sekiro_blood_hsv_img = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2HSV)
