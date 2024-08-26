@@ -19,6 +19,7 @@ from torch.autograd import Variable
 import torch
 import os
 import cv2
+from collections import deque
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # from efficientnet import *
 # from utils.gym_setup import *
@@ -69,6 +70,11 @@ def self_power_count(self_power_hsv_img):
     white_pixel_count = cv2.countNonZero(mask)
     return white_pixel_count
 
+def self_stamina_count(obs_gray):
+    blurred_img = cv2.GaussianBlur(obs_gray, (3,3), 0)
+    canny_edges = cv2.Canny(blurred_img, 10, 100)
+    value = canny_edges.argmax(axis=-1)
+    return np.max(value)
 
 def dqn_learning(env,
                  env_id,
@@ -187,15 +193,10 @@ def dqn_learning(env,
     loss_cnt = 0
     reward_cnt = 0
     reward_10 = 0
-    loss_cnt_res = 0
-    # 统计连续防御次数，连续防御达到3次认为进入防御状态
-    continuous_defense = 0
-    is_defending = False
-    end_defense = False
     boss_attack = False
-    death_count = 0
+    # embed_10_queue = deque(maxlen = 3)  # 维护一个队列，存入3帧的embed
     for t in itertools.count(start=checkpoint):
-        t += 5500
+        # t += 5500
         # Check stopping criterion
         if stopping_criterion is not None and stopping_criterion(env, t):
             break
@@ -220,8 +221,13 @@ def dqn_learning(env,
         # plt.colorbar()
         # plt.show()
         output_boss, intermediate_results_boss = model_resnet_boss(obs)
+        # embed_10_queue.append(intermediate_results_boss)
+        # if len(embed_10_queue) == 3:
+        #     queue_tensor = torch.stack(list(embed_10_queue), dim=0)
+        #     intermediate_results_boss = queue_tensor.mean(dim = 0)
+        #     print(intermediate_results_boss.shape)
         max_values_boss, indices_boss = torch.max(output_boss, dim=1)
-        print("boss状态:", index_to_label[indices_boss.item()])
+        print("当前帧判断的boss状态:", index_to_label[indices_boss.item()])
         if indices_boss.item() != 6 and indices_boss.item() != 8:
             boss_attack = True
         else:
@@ -241,11 +247,18 @@ def dqn_learning(env,
                 action = torch.IntTensor(
                     [[np.random.randint(num_actions)]])[0][0]
         # print("即将和环境互动")
-        self_power_window = (1194, 752, 1220, 780)
+        '''---------------自身状态提取--------------'''
+        self_power_window = (1194, 752, 1220, 780) # 棍势条
         self_power_img = grab_screen(self_power_window)
         self_power_hsv = cv2.cvtColor(self_power_img, cv2.COLOR_BGR2HSV)
         self_power = self_power_count(self_power_hsv)  # >30一段 >60第二段
-
+        
+        self_stamina_window = (143,762,228,768) # 耐力条
+        self_stamina_img = grab_screen(self_stamina_window)
+        stamina_gray = cv2.cvtColor(self_stamina_img,cv2.COLOR_BGR2GRAY)
+        self_stamina = self_stamina_count(stamina_gray) # 为0是满或空 中间是准确的
+        '''-----------------------------------------------'''
+        
         selected_num = random.choice([1, 3])
         if indices_boss.item() == 4:  # 锄地
             action = torch.tensor([selected_num])
@@ -264,6 +277,9 @@ def dqn_learning(env,
             else:
                 action = torch.tensor([0])
 
+        # if action != 3 and action != 1 and self_stamina < 20 and self_stamina != 0: # 攻击但是没有耐力了
+        #     action = torch.tensor([selected_num])
+        
         obs, reward, done, stop, emergence_break = env.step(
             action, boss_attack)
 
@@ -453,36 +469,36 @@ def dqn_learning(env,
             print('loop took {} seconds'.format(time.time()-last_time))
             env.pause_game(False)
 
-        # # 4. Log progress
-        # if t % SAVE_MODEL_EVERY_N_STEPS == 0:
-        #     if not os.path.exists("models"):
-        #         os.makedirs("models")
-        #     if not os.path.exists("models_res"):
-        #         os.makedirs("models_res")
-        #     add_str = ''
-        #     if (double_dqn):
-        #         add_str = 'double'
-        #     if (dueling_dqn):
-        #         add_str = 'dueling'
-        #     model_save_path = "models/wukong_0825_2_%d.pth" % (t)
-        #     torch.save(Q.state_dict(), model_save_path)
-        #     # model_resnet_boss_path = "models_res/ulti_boss_%s_%s_%d.pth" %(str(env_id), add_str, t)
-        #     # torch.save(model_resnet_boss.state_dict(), model_resnet_boss_path)
-        #     # model_resnet_sekiro_path = "models_res/ulti_sekiro_%s_%s_%d.pth" %(str(env_id), add_str, t)
-        #     # torch.save(model_resnet_sekiro.state_dict(), model_resnet_sekiro_path)
+        # 4. Log progress
+        if t % SAVE_MODEL_EVERY_N_STEPS == 0:
+            if not os.path.exists("models"):
+                os.makedirs("models")
+            if not os.path.exists("models_res"):
+                os.makedirs("models_res")
+            add_str = ''
+            if (double_dqn):
+                add_str = 'double'
+            if (dueling_dqn):
+                add_str = 'dueling'
+            model_save_path = "models/wukong_0826_1_%d.pth" % (t)
+            torch.save(Q.state_dict(), model_save_path)
+            # model_resnet_boss_path = "models_res/ulti_boss_%s_%s_%d.pth" %(str(env_id), add_str, t)
+            # torch.save(model_resnet_boss.state_dict(), model_resnet_boss_path)
+            # model_resnet_sekiro_path = "models_res/ulti_sekiro_%s_%s_%d.pth" %(str(env_id), add_str, t)
+            # torch.save(model_resnet_sekiro.state_dict(), model_resnet_sekiro_path)
 
-        # # episode_rewards = get_wrapper_by_name(env, "Monitor").get_episode_rewards()
-        # if len(episode_rewards) > 0:
-        #     mean_episode_reward = np.mean(episode_rewards[-10:])
-        #     best_mean_episode_reward = max(
-        #         best_mean_episode_reward, mean_episode_reward)
-        # if t % LOG_EVERY_N_STEPS == 0:
-        #     print("---------------------------------")
-        #     print("Timestep %d" % (t,))
-        #     print("learning started? %d" % (t > learning_starts))
-        #     print("mean reward (10 episodes) %f" % mean_episode_reward)
-        #     print("best mean reward %f" % best_mean_episode_reward)
-        #     print("episodes %d" % len(episode_rewards))
-        #     print("exploration %f" % exploration.value(t))
-        #     print("learning_rate %f" % optimizer_spec.kwargs['lr'])
-        #     sys.stdout.flush()
+        # episode_rewards = get_wrapper_by_name(env, "Monitor").get_episode_rewards()
+        if len(episode_rewards) > 0:
+            mean_episode_reward = np.mean(episode_rewards[-10:])
+            best_mean_episode_reward = max(
+                best_mean_episode_reward, mean_episode_reward)
+        if t % LOG_EVERY_N_STEPS == 0:
+            print("---------------------------------")
+            print("Timestep %d" % (t,))
+            print("learning started? %d" % (t > learning_starts))
+            print("mean reward (10 episodes) %f" % mean_episode_reward)
+            print("best mean reward %f" % best_mean_episode_reward)
+            print("episodes %d" % len(episode_rewards))
+            print("exploration %f" % exploration.value(t))
+            print("learning_rate %f" % optimizer_spec.kwargs['lr'])
+            sys.stdout.flush()
