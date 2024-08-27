@@ -1,6 +1,4 @@
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-import torch
+
 import torch.optim as optim
 import argparse
 
@@ -9,7 +7,7 @@ from d3qnnew import dqn_learning, OptimizerSpec
 #from utils.atari_wrappers import *
 #from utils.gym_setup import *
 from schedules import *
-from env_sekiro import Sekiro
+from env_wukong import Wukong
 
 
 
@@ -30,7 +28,7 @@ CHECKPOINT = 0
 
 # torch.cuda.set_device(0)
 
-def sekiro_learn(env, env_id, double_dqn, dueling_dqn, checkpoint):
+def Wukong_learn(env, env_id, double_dqn, dueling_dqn, checkpoint):
 
     # def stopping_criterion(env, t):
     #     # notice that here t is the number of steps of the wrapped env,
@@ -62,10 +60,7 @@ def sekiro_learn(env, env_id, double_dqn, dueling_dqn, checkpoint):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='RL agents for sekiro')
-    #subparsers = parser.add_subparsers(title="subcommands", dest="subcommand")
-
-    #train_parser = subparsers.add_parser("train", help="train an RL agent for sekiro games")
+    parser = argparse.ArgumentParser(description='RL agents for Wukong')
     parser.add_argument("--gpu", type=int, default=0, help="ID of GPU to be used")
     parser.add_argument("--double-dqn", type=int, default=1, help="double dqn - 0 = No, 1 = Yes")
     parser.add_argument("--dueling-dqn", type=int, default=0, help="dueling dqn - 0 = No, 1 = Yes")
@@ -83,10 +78,9 @@ def main():
     # Run training
     double_dqn = (args.double_dqn == 1)
     dueling_dqn = (args.dueling_dqn == 1)
-    checkpoint = args.checkpoint
-    env = Sekiro(observation_w=175, observation_h=200, action_dim=4)
+    env = Wukong(observation_w=175, observation_h=200, action_dim=4)
     print("double_dqn %d, dueling_dqn %d" %(double_dqn, dueling_dqn))
-    sekiro_learn(env, 4, double_dqn=double_dqn, dueling_dqn=dueling_dqn, checkpoint=1) #此处load模型
+    Wukong_learn(env, 4, double_dqn=double_dqn, dueling_dqn=dueling_dqn, checkpoint=1) #此处load模型
 
 if __name__ == '__main__':
     main()

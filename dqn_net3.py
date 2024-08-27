@@ -30,20 +30,3 @@ class SimpleQ(nn.Module):
 def Q_construct(input_dim, num_actions):
     return SimpleQ(input_dim=input_dim, num_actions=num_actions)
 
-if __name__ == "__main__":
-    # Example usage
-    batch_size = 8
-    input_dim = 128
-    num_actions = 5
-
-    # Create input tensor
-    x = torch.randn(batch_size, input_dim)
-
-    # Create neural network instance
-    model = Q_construct(input_dim=input_dim, num_actions=num_actions)
-
-    # Perform forward pass
-    output = model(x)
-
-    # Print output
-    print("Output:", output)

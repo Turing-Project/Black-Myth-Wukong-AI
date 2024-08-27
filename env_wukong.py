@@ -8,14 +8,14 @@ from getkeys import key_check
 from restart import restart
 import matplotlib.pyplot as plt
 import pyautogui
-class Sekiro(object):
+class Wukong(object):
     def __init__(self, observation_w, observation_h, action_dim):
         super().__init__()
 
         self.observation_dim = observation_w * observation_h
         self.width = observation_w
         self.height = observation_h
-
+        self.death_cnt = 0
         self.action_dim = action_dim
 
         # self.obs_window = (379,160,675,500) # 显示器
@@ -30,13 +30,13 @@ class Sekiro(object):
         # self.blood_window = (68,84,398,554)  #显示器1024*576
         # self.boss_blood_window = (71,95,287,99)  #笔记本1024*576
         self.boss_blood_window = (510,692,780,702)# 黑神话
-        # self.sekiro_blood_window = (75,567,396,570)  #笔记本1024*576
-        self.sekiro_blood_window = (144,741,254,746)  #黑神话 
+        # self.self_blood_window = (75,567,396,570)  #笔记本1024*576
+        self.self_blood_window = (144,741,254,746)  #黑神话 
         # self.stamina_window = (351,66,683,530) #显示器
         # self.blood_window = (103,113,605,848)  # 显示器 1600*900
         self.boss_stamina_window = (345,78,690,81) #笔记本
-        # self.sekiro_stamina_window = (426,542,626,545) #笔记本
-        self.sekiro_stamina_window = (1128,725,1158,779) # 黑神话
+        # self.self_stamina_window = (426,542,626,545) #笔记本
+        self.self_stamina_window = (1128,725,1158,779) # 黑神话
         # self.stamina_window = (549,86,1074,88)  # 显示器1600*900`
 
         self.boss_blood = 0
@@ -85,29 +85,27 @@ class Sekiro(object):
             directkeys.right_dodge()
         elif action == 4:
             directkeys.hard_attack()
-        
-        #elif action == 4: #r_back
-           # directkeys.dodge_back()
-       # elif action == 5: #hard_attack
-           # directkeys.hard_attack()
-        #elif action == 1: #ninja_attack
-           # directkeys.ninja_attack()
-        #elif action == 3: #skill_attack
-            #directkeys.skill_attack()
+        elif action == 5:
+            directkeys.stay_still()
+        elif action == 6:
+            directkeys.ding_shen_gong_ji()
+        elif action == 7:
+            directkeys.kan_po()
+
         
     def get_reward(self, boss_blood, next_boss_blood, self_blood, next_self_blood, 
                    boss_stamina, next_boss_stamina, self_stamina, next_self_stamina, 
                    stop, emergence_break,action,boss_attack):
         print(next_self_blood,boss_blood)
-        if next_self_blood < 50:     # self dead
+        if next_self_blood < 45:     # self dead
             print("dead")
             # print("快死了，当前血量：",self_blood,"马上血量：",next_self_blood)
-            if emergence_break < 2:
-                reward = -6
-                done = 1
-                stop = 0
-                emergence_break += 1
-                # time.sleep(3)
+            reward = -6
+            done = 1
+            stop = 0
+            emergence_break += 1
+            if self.death_cnt <= 2:
+                self.death_cnt += 1
                 print("后跳并喝血")
                 pyautogui.keyDown('S')
                 directkeys.dodge()
@@ -119,48 +117,15 @@ class Sekiro(object):
                 pyautogui.press('R')
                 pyautogui.press('R')
                 pyautogui.keyUp('S')
-                # pyautogui.keyDown('num2')
-                # pyautogui.keyDown('num2')
-                # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
-                # time.sleep(1)
-                # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
-                return reward, done, stop, emergence_break
-            else:
-                reward = -6
-                done = 1
-                stop = 0
-                emergence_break = 100
-                # pyautogui.keyDown('num2')
-                # pyautogui.keyDown('num2')
-                # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
-                # time.sleep(1)
-                # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
-                print("后跳并喝血")
-                pyautogui.keyDown('S')
-                directkeys.dodge()
-                directkeys.dodge()
-                directkeys.dodge()
-                time.sleep(0.2)
-                pyautogui.press('R')
                 time.sleep(1)
-                pyautogui.press('R')
-                pyautogui.press('R')
-                pyautogui.keyUp('S')
-                return reward, done, stop, emergence_break
-        # elif next_boss_blood - boss_blood > 70 and boss_blood < 10:   #boss dead
-        #     print("boss死了")
-        #     if emergence_break < 2:
-        #         reward = 30
-        #         done = 0
-        #         stop = 0
-        #         emergence_break += 1
-        #         return reward, done, stop, emergence_break
-        #     else:
-        #         reward = 30
-        #         done = 0
-        #         stop = 0
-        #         emergence_break = 100
-        #         return reward, done, stop, emergence_break
+            else: 
+                pass
+            # pyautogui.keyDown('num2')
+            # pyautogui.keyDown('num2')
+            # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
+            # time.sleep(1)
+            # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
+            return reward, done, stop, emergence_break
         
         else:
             reward = 0
@@ -181,20 +146,14 @@ class Sekiro(object):
             
             # 自己掉血扣分
             if next_self_blood - self_blood < -5:
-                # if stop == 0:
-                self_blood_reward = (next_self_blood - self_blood) //10
+                self_blood_reward = (next_self_blood - self_blood) // 10
                 print("掉血惩罚")
-                end_defense = True
-                # stop = 1
                 time.sleep(0.05)
                 # 防止连续取帧时一直计算掉血
-            # else:
-            #     stop = 0
-            # 打掉boss血加分
             if next_boss_blood - boss_blood <= -18:
                 print("打掉boss血而奖励")
-                boss_blood_reward = (boss_blood - next_boss_blood) // 10
-                boss_blood_reward = min(boss_blood_reward,10)
+                boss_blood_reward = (boss_blood - next_boss_blood) // 5
+                boss_blood_reward = min(boss_blood_reward,20)
             # print("self_blood_reward:    ",self_blood_reward)
             # print("boss_blood_reward:    ",boss_blood_reward)
             # 成功防御加分
@@ -204,13 +163,9 @@ class Sekiro(object):
             elif (action == 1 or action == 3) and boss_attack == True and next_self_blood-self_blood == 0:
                 print("成功闪避")
                 self_stamina_reward += 0.5
-            # boss架势值增加加分
-            #如果什么都没做，进行惩罚
             reward = reward + self_blood_reward * 0.8 + boss_blood_reward * 1.2 + self_stamina_reward * 1.0 + boss_stamina_reward * 1.0
             done = 0
-            emergence_break = 0
-            # if(reward != -0.5):
-            #     print("Reward of this round is:", reward)        
+            emergence_break = 0    
             return reward, done, stop, emergence_break
 
     def step(self, action, boss_attack):
@@ -224,6 +179,12 @@ class Sekiro(object):
             print("右闪避")
         elif action == 4:
             print("重棍")
+        elif action == 5:
+            print("气力不足，歇脚一歇")
+        elif action == 6:
+            print("定！五连绝世！")
+        elif action == 7:
+            print("轻棍+识破")
         self.take_action(action)
         
         obs_screen = grab_screen(self.obs_window)
@@ -239,18 +200,18 @@ class Sekiro(object):
         # plt.show()
         # print(obs.shape)
         # 只狼血量统计
-        sekiro_blood_img = grab_screen(self.sekiro_blood_window)
-        # sekiro_blood_hsv_img = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2HSV)
-        sekiro_blood_gray_img = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2GRAY)
-        next_self_blood = self.self_blood_count(sekiro_blood_gray_img)
+        self_blood_img = grab_screen(self.self_blood_window)
+        # self_blood_hsv_img = cv2.cvtColor(self_blood_img, cv2.COLOR_BGR2HSV)
+        self_blood_gray_img = cv2.cvtColor(self_blood_img, cv2.COLOR_BGR2GRAY)
+        next_self_blood = self.self_blood_count(self_blood_gray_img)
         # boss血量统计
         boss_blood_img = grab_screen(self.boss_blood_window)
         boss_blood_hsv_img = cv2.cvtColor(boss_blood_img, cv2.COLOR_BGR2HSV)
         next_boss_blood = self.boss_blood_count(boss_blood_hsv_img)
         # 只狼架势条统计
-        sekiro_stamina_img = grab_screen(self.sekiro_stamina_window)
-        sekiro_stamina_hsv_img = cv2.cvtColor(sekiro_stamina_img, cv2.COLOR_BGR2HSV)
-        next_self_stamina = self.self_stamina_count(sekiro_stamina_hsv_img)
+        self_stamina_img = grab_screen(self.self_stamina_window)
+        self_stamina_hsv_img = cv2.cvtColor(self_stamina_img, cv2.COLOR_BGR2HSV)
+        next_self_stamina = self.self_stamina_count(self_stamina_hsv_img)
         # boss架势条统计
         boss_stamina_img = grab_screen(self.boss_stamina_window)
         boss_stamina_hsv_img = cv2.cvtColor(boss_stamina_img, cv2.COLOR_BGR2HSV)
@@ -305,17 +266,17 @@ class Sekiro(object):
         # obs_gray = cv2.cvtColor(obs_resize, cv2.COLOR_BGR2GRAY)
         obs = np.array(obs_resize).reshape(-1,self.height,self.width,4)[0]
         # # 只狼血量统计
-        # sekiro_blood_img = grab_screen(self.sekiro_blood_window)
-        # sekiro_blood_hsv_img = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2HSV)
-        # self.self_blood = self.self_blood_count(sekiro_blood_hsv_img)
+        # self_blood_img = grab_screen(self.self_blood_window)
+        # self_blood_hsv_img = cv2.cvtColor(self_blood_img, cv2.COLOR_BGR2HSV)
+        # self.self_blood = self.self_blood_count(self_blood_hsv_img)
         # # boss血量统计
         # boss_blood_img = grab_screen(self.boss_blood_window)
         # boss_blood_hsv_img = cv2.cvtColor(boss_blood_img, cv2.COLOR_BGR2HSV)
         # self.boss_blood = self.boss_blood_count(boss_blood_hsv_img)
         # # 只狼架势条统计
-        # sekiro_stamina_img = grab_screen(self.sekiro_stamina_window)
-        # sekiro_stamina_hsv_img = cv2.cvtColor(sekiro_stamina_img, cv2.COLOR_BGR2HSV)
-        # self.self_stamina = self.self_stamina_count(sekiro_stamina_hsv_img)
+        # self_stamina_img = grab_screen(self.self_stamina_window)
+        # self_stamina_hsv_img = cv2.cvtColor(self_stamina_img, cv2.COLOR_BGR2HSV)
+        # self.self_stamina = self.self_stamina_count(self_stamina_hsv_img)
         # # boss架势条统计
         # boss_stamina_img = grab_screen(self.boss_stamina_window)
         # boss_stamina_hsv_img = cv2.cvtColor(boss_stamina_img, cv2.COLOR_BGR2HSV)
@@ -330,7 +291,7 @@ def boss_blood_count(boss_blood_hsv_img):
     return white_pixel_count
 def hsv_test(image):
     hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    hsv_value = hsv_img[1,1]
+    hsv_value = hsv_img[0,0]
     print(hsv_value)
 
 def self_stamina_count(self_stamina_hsv_img):
@@ -341,16 +302,16 @@ def self_stamina_count(self_stamina_hsv_img):
     return white_pixel_count
 
 
-# def self_blood_count(sekiro_blood_hsv_img):
+# def self_blood_count(self_blood_hsv_img):
 #     lower_white = np.array([0, 0, 180])
 #     upper_white = np.array([360, 75, 225])
-#     mask = cv2.inRange(sekiro_blood_hsv_img, lower_white, upper_white)
+#     mask = cv2.inRange(self_blood_hsv_img, lower_white, upper_white)
 #     white_pixel_count = cv2.countNonZero(mask)
 #     return white_pixel_count
 
-# sekiro_blood_window = (138,738,243,749)  #黑神话 
-# sekiro_blood_img = grab_screen(sekiro_blood_window)
-# obs_gray = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2GRAY)
+# self_blood_window = (138,738,243,749)  #黑神话 
+# self_blood_img = grab_screen(self_blood_window)
+# obs_gray = cv2.cvtColor(self_blood_img, cv2.COLOR_BGR2GRAY)
 # print(self_blood_count(obs_gray))
 def self_blood_count(obs_gray):
     blurred_img = cv2.GaussianBlur(obs_gray, (3,3), 0)
@@ -365,8 +326,14 @@ def self_power_count(self_power_hsv_img):
     white_pixel_count = cv2.countNonZero(mask)
     return white_pixel_count
 
+def self_stamina_count(obs_gray):
+    blurred_img = cv2.GaussianBlur(obs_gray, (3,3), 0)
+    canny_edges = cv2.Canny(blurred_img, 10, 100)
+    value = canny_edges.argmax(axis=-1)
+    return np.max(value)
+
 if __name__ == "__main__":
-    env = Sekiro(observation_w=100, observation_h=200, action_dim=5)
+    env = Wukong(observation_w=100, observation_h=200, action_dim=5)
     # while True:
     #     env.step(0)
     #     time.sleep(5)
@@ -374,9 +341,12 @@ if __name__ == "__main__":
     height = 175
     obs_window = (389,135,704,525) # 笔记本
     boss_blood_window = (510,692,774,701)# 黑神话
-    sekiro_blood_window = (138,738,243,749)  #黑神话 
+    self_blood_window = (138,738,243,749)  #黑神话 
     # boss_stamina_window  = (345,78,690,81) #笔记本
-    sekiro_stamina_window = (1128,725,1158,779)
+    self_stamina_window = (143,762,228,768)
+    
+    ding_shen_window = (1112,656,1113,657)
+
     # pyautogui.keyDown('num2')
     # pyautogui.keyDown('num2')
     # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
@@ -394,29 +364,41 @@ if __name__ == "__main__":
     # obs = 1
     # while True:
     while True:
-        self_power_window = (1194,752,1220,780)
-        # self_power_window = (1209,756,1211,758)
-        self_power_img = grab_screen(self_power_window)
-        # hsv_test(self_power_img)
-        self_power_hsv = cv2.cvtColor(self_power_img, cv2.COLOR_BGR2HSV)
-        self_power = self_power_count(self_power_hsv)
-        print(self_power)
+        # self_power_window = (1194,752,1220,780)
+        # # self_power_window = (1209,756,1211,758)
+        # self_power_img = grab_screen(self_power_window)
+        # # hsv_test(self_power_img)
+        # self_power_hsv = cv2.cvtColor(self_power_img, cv2.COLOR_BGR2HSV)
+        # self_power = self_power_count(self_power_hsv)
+        # print(self_power)
+        ding_shen_window = (1112,656,1113,657)
+        ding_shen_img =grab_screen(ding_shen_window)
+        hsv_img = cv2.cvtColor(ding_shen_img, cv2.COLOR_BGR2HSV)
+        hsv_value = hsv_img[0,0]
+        
+        ding_shen_available = False
+        if hsv_value[2] >= 130:
+            ding_shen_available = True
+        print(ding_shen_available)
+        # self_stamina_img = grab_screen(self_stamina_window)
+        # stamina_gray = cv2.cvtColor(self_stamina_img,cv2.COLOR_BGR2GRAY)
+        # print(self_stamina_count(stamina_gray))
     #     time.sleep(0.5)
-        # sekiro_blood_img = grab_screen(sekiro_blood_window)
-        # # sekiro_blood_hsv_img = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2HSV)
-        # obs_gray = cv2.cvtColor(sekiro_blood_img, cv2.COLOR_BGR2GRAY)
+        # self_blood_img = grab_screen(self_blood_window)
+        # # self_blood_hsv_img = cv2.cvtColor(self_blood_img, cv2.COLOR_BGR2HSV)
+        # obs_gray = cv2.cvtColor(self_blood_img, cv2.COLOR_BGR2GRAY)
         # print(self_blood_count(obs_gray))
-        # # px = sekiro_blood_hsv_img[1,20]
+        # # px = self_blood_hsv_img[1,20]
         # # # print(px[0],px[1],px[2])
-        # # self_blood = self_blood_count(sekiro_blood_hsv_img)
+        # # self_blood = self_blood_count(self_blood_hsv_img)
         # time.sleep(0.2)
         
         # print(self_blood)
         # time.sleep(0.05)
 
-        # sekiro_stamina_img = grab_screen(sekiro_stamina_window)
-        # sekiro_stamina_hsv_img = cv2.cvtColor(sekiro_stamina_img, cv2.COLOR_BGR2HSV)
-        # self_stamina = self_stamina_count(sekiro_stamina_hsv_img)
+        # self_stamina_img = grab_screen(self_stamina_window)
+        # self_stamina_hsv_img = cv2.cvtColor(self_stamina_img, cv2.COLOR_BGR2HSV)
+        # self_stamina = self_stamina_count(self_stamina_hsv_img)
         # print(self_stamina)
 
 

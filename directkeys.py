@@ -100,12 +100,21 @@ def hard_attack():
     time.sleep(0.1)
     ReleaseKey(M)
     time.sleep(2.0)
-    
+
+def stay_still():
+    time.sleep(0.5)
+
+
 def hard_attack_long():
+    PressKey(W)
+    PressKey(O)
     PressKey(M)
     time.sleep(4.5)
     ReleaseKey(M)
-    time.sleep(3.0)
+    ReleaseKey(W)
+    ReleaseKey(O)
+    time.sleep(2.8)
+
     
 def dodge():
     PressKey(K)
@@ -146,6 +155,19 @@ def right_dodge():
     dodge()
     ReleaseKey(D)
 
+def ding_shen_gong_ji():
+    pyautogui.keyDown('1')
+    pyautogui.keyUp('1')
+    time.sleep(0.5)
+    wulian()
+    
+def kan_po():
+    light_attack()
+    PressKey(M)
+    time.sleep(0.1)
+    ReleaseKey(M)
+    time.sleep(2.0)
+    
     
 if __name__ == '__main__':
     time.sleep(2)
@@ -167,7 +189,6 @@ if __name__ == '__main__':
     # dodge()
     # dodge()22222222
     # PressKey(M)
-    light_attack()
-    hard_attack()
-    left_dodge()
-    light_attack()
+    while True:
+        kan_po()
+        light_attack()

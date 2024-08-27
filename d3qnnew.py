@@ -6,6 +6,7 @@ from grabscreen import grab_screen
 import torch.optim as optim
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import directkeys
 from dqn_net3 import Q_construct
 from schedules import *
 from replay_buffer import *
@@ -111,42 +112,10 @@ def dqn_learning(env,
         'D:/dqn_wukong/RL-ARPG-Agent-1/boss_model.pkl'))
     model_resnet_boss.to(device)
     model_resnet_boss.eval()
-    # model_resnet_sekiro = torch.load('resnet_model_sekiro_round11_0.pth')
-    # model_resnet_sekiro.to(device)
-    # model_resnet_sekiro.eval()
-
-    # criterion = nn.NLLLoss()
-    # optimizer_boss = optim.Adam(model_resnet_boss.parameters(), lr=0.00005)
-    # optimizer_sekiro = optim.Adam(model_resnet_sekiro.parameters(), lr = 0.00005)
 
     # 控制冻结和更新的参数
     for param in model_resnet_boss.parameters():
         param.requires_grad = False
-    # for param in model_resnet_sekiro.parameters():
-    #     param.requires_grad = False
-    # for param in model_resnet_boss.conv5_x.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_boss.avg_pool.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_boss.fc1.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_boss.fc2.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_boss.fc3.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_sekiro.conv5_x.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_sekiro.avg_pool.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_sekiro.fc1.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_sekiro.fc2.parameters():
-    #     param.requires_grad = True
-    # for param in model_resnet_sekiro.fc3.parameters():
-    #     param.requires_grad = True
-    # 新的Q和Qtarget网络定义
-    # Q = q_func(in_channels = in_channels, num_actions = num_actions).type(dtype)
-    # Q_target = q_func(in_channels = in_channels, num_actions = num_actions).type(dtype)
     Q = Q_construct(input_dim=256, num_actions=num_actions).type(dtype)
     Q_target = Q_construct(input_dim=256, num_actions=num_actions).type(dtype)
     # Q = efficientnet(num_classes=num_actions, net="B0", pretrained=False).type(dtype)
@@ -194,9 +163,10 @@ def dqn_learning(env,
     reward_cnt = 0
     reward_10 = 0
     boss_attack = False
+    initial_steal = True # 第一次上来先偷一棍
     # embed_10_queue = deque(maxlen = 3)  # 维护一个队列，存入3帧的embed
     for t in itertools.count(start=checkpoint):
-        # t += 5500
+        t += 5500
         # Check stopping criterion
         if stopping_criterion is not None and stopping_criterion(env, t):
             break
@@ -208,6 +178,10 @@ def dqn_learning(env,
         # get observatitrons to input to Q network (need to append prev frames)
         observations = replay_buffer.encode_recent_observation()
         # print(observations.shape)
+        if initial_steal:
+            print("偷一棍")
+            directkeys.hard_attack_long() # 黑神话特色偷一刀
+            initial_steal = False
         obs = torch.from_numpy(observations).unsqueeze(
             0).type(dtype)  # 1,4,175,200
         obs = obs[:, :3, 20:180, 5:165]  # 1,3,128,128
@@ -257,6 +231,16 @@ def dqn_learning(env,
         self_stamina_img = grab_screen(self_stamina_window)
         stamina_gray = cv2.cvtColor(self_stamina_img,cv2.COLOR_BGR2GRAY)
         self_stamina = self_stamina_count(stamina_gray) # 为0是满或空 中间是准确的
+        
+        ding_shen_window = (1107,656,1108,657)
+        ding_shen_img = grab_screen(ding_shen_window)
+        hsv_img = cv2.cvtColor(ding_shen_img, cv2.COLOR_BGR2HSV)
+        hsv_value = hsv_img[0,0]
+        
+        ding_shen_available = False
+        if hsv_value[2] >= 130:
+            ding_shen_available = True
+            
         '''-----------------------------------------------'''
         
         selected_num = random.choice([1, 3])
@@ -268,24 +252,32 @@ def dqn_learning(env,
             action = torch.tensor([selected_num])
         elif indices_boss.item() == 6:  # 受到攻击
             action = torch.tensor([2])
-        elif indices_boss.item() == 0 or indices_boss.item() == 2:  # 冲刺砍或扔刀
-            if self_power > 60:
-                action = torch.tensor([4])
-        elif indices_boss.item() == 8:  # 观察
-            if self_power > 60:
-                action = torch.tensor([4])
-            else:
-                action = torch.tensor([0])
-
+        # elif indices_boss.item() == 0 or indices_boss.item() == 2:  # 冲刺砍或扔刀
+        #     if self_power > 60:
+        #         action = torch.tensor([4])
+        # elif indices_boss.item() == 8:  # 观察
+        #     if self_power > 60:
+        #         action = torch.tensor([4])
+        #     else:
+        #         action = torch.tensor([0])
         # if action != 3 and action != 1 and self_stamina < 20 and self_stamina != 0: # 攻击但是没有耐力了
-        #     action = torch.tensor([selected_num])
-        
+        #     action = torch.tensor([5])
+        if ding_shen_available == True:
+            action = torch.tensor([6])
+            
+        if indices_boss.item() == 7 and self_power > 30: # 普攻可识破
+            action = torch.tensor([7])
         obs, reward, done, stop, emergence_break = env.step(
             action, boss_attack)
 
         if action == 4:  # 把重棍处理成三连棍
             action = 2
-
+        elif action == 5: # 把歇脚回气力处理成轻棍
+            action = 0
+        elif action == 6: # 定身处理成重棍
+            action = 2
+        elif action == 7: # 识破处理成重棍
+            action = 2
         if reward_cnt % 30 == 0:
             reward_10 += reward
             writer.add_scalars(
@@ -295,21 +287,9 @@ def dqn_learning(env,
         else:
             reward_10 += reward
             reward_cnt += 1
-        # # for test
-        # obs = obs.squeeze()
-        # plt.imshow(obs, cmap='gray')
-        # plt.show()
-        # obs = torch.from_numpy(obs).unsqueeze(0).unsqueeze(0).type(dtype)
-        # output_boss,intermediate_results_boss = model_resnet_boss(obs[:,:,:120,:])
-        # output_sekiro,intermediate_results_sekiro = model_resnet_sekiro(obs[:,:,120:,:])
-        # print(output_boss,output_sekiro)
-        # time.sleep(10)
         episode_reward += reward
-        # print("即将存入buffer")
-        # store effect of action
         replay_buffer.store_effect(last_stored_frame_idx, action, reward, done)
 
-        # reset env if reached episode boundary
         if done:
             obs = env.reset()
             episode_rewards.append(episode_reward)
@@ -421,34 +401,11 @@ def dqn_learning(env,
             time_before_optimization = time.time()
             # ------------更新resnet 和dqn网络 ----------------------------------------------------------------
             # 计算loss
-            loss_boss_graph = 0
-            loss_sekiro_graph = 0
-            # if t > 1000:
-            #     loss_boss = criterion(torch.log(output_boss), act_t)
-            #     loss_sekiro = criterion(torch.log(output_sekiro),act_t)
-            #     loss_boss_graph = loss_boss.item()
-            #     loss_sekiro_graph = loss_sekiro.item()
             loss = loss_fn(expected_q, q_s_a)
-            # zerograd
-            # if t > 1000:
-            #     optimizer_boss.zero_grad()
-            #     optimizer_sekiro.zero_grad()
             optimizer.zero_grad()
-            # loss反向传播
-            # if t > 1000:
-            #     loss_boss.backward(retain_graph=True)
-            #     loss_sekiro.backward(retain_graph=True)
             loss.backward()
-            # 优化器执行
-            # if t > 1000:
-            #     optimizer_boss.step()
-            #     optimizer_sekiro.step()
             optimizer.step()
-            # 添加 loss 到 TensorBoard
             writer.add_scalar("loss_dqn", loss.item(), loss_cnt)
-            # if t > 1000:
-            #     writer.add_scalar("loss_resnet_boss",loss_boss_graph,loss_cnt)
-            #     writer.add_scalar("loss_resnet_sekiro",loss_sekiro_graph, loss_cnt)
             loss_cnt += 1
             # ---------------------------------更新完成------------------------------------------------
             num_param_updates += 1
@@ -458,13 +415,6 @@ def dqn_learning(env,
             # update target Q network weights with current Q network weights
             if num_param_updates % target_update_freq == 0:
                 Q_target.load_state_dict(Q.state_dict())
-
-            # (2) Log values and gradients of the parameters (histogram)
-            # if t % LOG_EVERY_N_STEPS == 0:
-                # for tag, value in Q.named_parameters():
-                # tag = tag.replace('.', '/')
-                # logger.histo_summary(tag, to_np(value), t+1)
-                # logger.histo_summary(tag+'/grad', to_np(value.grad), t+1)
             #####
             print('loop took {} seconds'.format(time.time()-last_time))
             env.pause_game(False)
@@ -480,12 +430,8 @@ def dqn_learning(env,
                 add_str = 'double'
             if (dueling_dqn):
                 add_str = 'dueling'
-            model_save_path = "models/wukong_0826_1_%d.pth" % (t)
+            model_save_path = "models/wukong_0827_1_%d.pth" % (t)
             torch.save(Q.state_dict(), model_save_path)
-            # model_resnet_boss_path = "models_res/ulti_boss_%s_%s_%d.pth" %(str(env_id), add_str, t)
-            # torch.save(model_resnet_boss.state_dict(), model_resnet_boss_path)
-            # model_resnet_sekiro_path = "models_res/ulti_sekiro_%s_%s_%d.pth" %(str(env_id), add_str, t)
-            # torch.save(model_resnet_sekiro.state_dict(), model_resnet_sekiro_path)
 
         # episode_rewards = get_wrapper_by_name(env, "Monitor").get_episode_rewards()
         if len(episode_rewards) > 0:
