@@ -13,12 +13,13 @@ def restart(initial = False):
     if initial == False:
         print("死,restart")
         print("开始新一轮")
-        # time.sleep(3)
-        # pyautogui.keyDown('num2')
-        # pyautogui.keyDown('num2')
-        # pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
-        # time.sleep(1)
-        # pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
+        time.sleep(3)
+        pyautogui.keyDown('num2')
+        pyautogui.keyDown('num2')
+        pyautogui.keyDown('num2') # 必须要3次它才能检测到，原因未知，少一次都不行
+        time.sleep(1)
+        pyautogui.keyUp('num2') # 释放按键，下一次才能正确按到
+        # pass
     else :
         pass
   

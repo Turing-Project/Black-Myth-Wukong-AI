@@ -1,12 +1,3 @@
-'''
-Description: 
-Version: 2.0
-Autor: Zhang
-Date: 2021-11-14 15:08:58
-LastEditors: Zhang
-LastEditTime: 2021-12-04 15:02:57
-'''
-
 import ctypes
 import time
 from pykeyboard import PyKeyboard
@@ -129,6 +120,7 @@ def wulian():
     light_attack()
     time.sleep(0.5)
     light_attack()
+    time.sleep(0.5)
 
 def erlian():
     light_attack()
@@ -167,28 +159,4 @@ def kan_po():
     time.sleep(0.1)
     ReleaseKey(M)
     time.sleep(2.0)
-    
-    
-if __name__ == '__main__':
-    time.sleep(2)
-    # time1 = time.time()
-    # while(True):
-    #     if abs(time.time()-time1) > 5:
-    #         break
-    #     else:
-    #         PressKey(M)
-    #         time.sleep(0.1)
-    #         ReleaseKey(M)
-    #         time.sleep(0.2)
-    # dodge()++
-    # dodge()
-    # dodge()2
-    # dodge()2
-    # dodge()
-    # dodge()
-    # dodge()
-    # dodge()22222222
-    # PressKey(M)
-    while True:
-        kan_po()
-        light_attack()
+
