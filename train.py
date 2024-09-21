@@ -1,6 +1,6 @@
 import torch.optim as optim
 import argparse
-from d3qnnew import dqn_learning, OptimizerSpec
+from dqn import dqn_learning, OptimizerSpec
 from schedules import LinearSchedule
 from env_wukong import Wukong
 

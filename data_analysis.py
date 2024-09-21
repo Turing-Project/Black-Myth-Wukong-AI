@@ -11,7 +11,7 @@ import pandas as pd
 from collections import Counter
 from random import shuffle
 
-file_name = 'wukong_train_new_daolang_4.npy'
+file_name = 'wukong_train.npy'
 if os.path.isfile(file_name):
     print("file exists , loading previous data")
     training_data = list(np.load(file_name,allow_pickle=True))

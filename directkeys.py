@@ -152,7 +152,7 @@ def ding_shen_gong_ji():
     pyautogui.keyUp('1')
     time.sleep(0.5)
     wulian()
-    
+
 def kan_po():
     light_attack()
     PressKey(M)

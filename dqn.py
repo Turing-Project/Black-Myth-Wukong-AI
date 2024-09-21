@@ -10,7 +10,7 @@ import random
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from dqn_net3 import Q_construct
+from dqn_net import Q_construct
 from schedules import *
 from replay_buffer import *
 from collections import namedtuple
@@ -32,16 +32,16 @@ writer = SummaryWriter()
 
 # 状态对应--刀郎
 index_to_label = {
-    0: '观察',
-    1: '跳突刺',
-    2: '普攻',
-    3: '滞空扔枪',
-    4: '转圈',
-    5: '受到攻击',
-    6: '枪花水流',
-    7: '拖枪大招',
-    8: '扔枪连招',
-    9: '站突刺'
+    0: '冲刺砍',
+    1: '旋转飞',
+    2: '扔刀',
+    3: '飞雷神',
+    4: '锄地',
+    5: '锄地起飞',
+    6: '受到攻击',
+    7: '普攻',
+    8: '观察',
+    9: '大荒星陨'
 }
 
 
@@ -76,11 +76,11 @@ def dqn_learning(env,
     model_resnet_boss.eval()
     
     # 初始自身模型
-    model_resnet_malo = ResNet50_boss(num_classes=2) # 用于判断自身是否倒地
-    model_resnet_malo.load_state_dict(torch.load(
-        'D:/dqn_wukong/RL-ARPG-Agent-1/malo_model.pkl'))
-    model_resnet_malo.to(device)
-    model_resnet_malo.eval()
+    # model_resnet_malo = ResNet50_boss(num_classes=2) # 用于判断自身是否倒地
+    # model_resnet_malo.load_state_dict(torch.load(
+    #     'D:/dqn_wukong/RL-ARPG-Agent-1/malo_model.pkl'))
+    # model_resnet_malo.to(device)
+    # model_resnet_malo.eval()
 
 
     # 控制冻结和更新的参数
@@ -210,7 +210,7 @@ def dqn_learning(env,
         '''-----------------------------------------------'''
         
         '''--------------------手动约束部分-----------------'''
-        selected_num = random.choice([1, 3])
+        selected_num = random.choice([1, 3]) # 1,3分别是左翻滚和右翻滚
         # if indices_boss.item() == 4 or indices_boss.item() == 9:  # 锄地
         #     action = torch.tensor([selected_num])
         # elif indices_boss.item() == 5 or indices_boss.item() == 1 or indices_boss.item() == 2:  # 锄地起飞
@@ -238,12 +238,14 @@ def dqn_learning(env,
         #         action = torch.tensor([selected_num])
         if ding_shen_available == True:
             action = torch.tensor([6])
-        # 额外判断是否倒地，倒地则必须翻滚
-        res,embed = model_resnet_malo(tensor_malo)
-        max_values_boss, indices_self = torch.max(res, dim=1)
-        if indices_self.item() == 0: # 猴倒地
-            print("倒地了，翻滚")
-            action = torch.tensor([selected_num])
+            
+        # # 额外判断是否倒地，倒地则必须翻滚
+        # res,embed = model_resnet_malo(tensor_malo)
+        # max_values_boss, indices_self = torch.max(res, dim=1)
+        # if indices_self.item() == 0: # 猴倒地
+        #     print("倒地了，翻滚")
+        #     action = torch.tensor([selected_num])
+        
         '''----------------约束结束----------------------'''
         # state_list.append(indices_boss.item()) # 维护boss状态
         # print(state_list)

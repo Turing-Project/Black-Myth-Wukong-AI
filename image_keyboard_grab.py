@@ -14,7 +14,7 @@ import os
 
 wait_time = 5
 L_t = 3
-file_name = 'wukong_train_new_baiyi_4.npy'
+file_name = 'wukong_train.npy'
 # window_size = (306,89,1029,569) # boss位置 # 1024*800分辨率 16:9
 # window_size = (444,546,854,798) # 猴的倒地位置
 window_size = (336,135,1395,795) # 1680*1050 分辨率 16:9
