@@ -3,11 +3,11 @@ import pyautogui
 import cv2
 import time
 import matplotlib.pyplot as plt
-import directkeys as directkeys
+import utils.directkeys as directkeys
 import numpy as np
 from screen_key_grab.grabscreen import grab_screen
 from screen_key_grab.getkeys import key_check
-from restart import restart
+from utils.restart import restart
 
 class Wukong(object):
     def __init__(self, observation_w, observation_h, action_dim):

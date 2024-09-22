@@ -1,7 +1,7 @@
 import torch.optim as optim
 import argparse
 from dqn import dqn_learning, OptimizerSpec
-from schedules import LinearSchedule
+from utils.schedules import LinearSchedule
 from env_wukong import Wukong
 
 BATCH_SIZE = 2

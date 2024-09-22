@@ -4,14 +4,14 @@ import sys
 import torch
 import os
 import cv2
-import directkeys
+import utils.directkeys as directkeys
 import time
 import random
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from nets.dqn_net import Q_construct
-from schedules import *
+from utils.schedules import *
 from replay_buffer import *
 from collections import namedtuple
 from nets.ResNet_boss_model import ResNet50_boss
