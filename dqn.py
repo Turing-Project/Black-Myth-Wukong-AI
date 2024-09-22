@@ -10,12 +10,12 @@ import random
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from dqn_net import Q_construct
+from nets.dqn_net import Q_construct
 from schedules import *
 from replay_buffer import *
 from collections import namedtuple
-from ResNet_boss_model import ResNet50_boss
-from grabscreen import grab_screen
+from nets.ResNet_boss_model import ResNet50_boss
+from screen_key_grab.grabscreen import grab_screen
 from torch.utils.tensorboard import SummaryWriter
 
 

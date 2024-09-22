@@ -8,9 +8,9 @@ Created on Wed Apr  8 09:45:04 2020
 import numpy as np
 import cv2
 import time
-import grabscreen
-import getkeys
 import os
+from screen_key_grab import grabscreen
+from screen_key_grab import getkeys
 
 wait_time = 5
 L_t = 3

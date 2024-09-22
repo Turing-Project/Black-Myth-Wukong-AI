@@ -8,8 +8,9 @@ import torch
 import random
 import argparse
 import numpy as np
-from ResNet_boss_model import ResNet50_boss
-from ResNet_data import DealDataset
+
+from nets.ResNet_boss_model import ResNet50_boss
+from pre_train.ResNet_data import DealDataset
 from tensorboardX import SummaryWriter
 import torch.nn.functional as F
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score

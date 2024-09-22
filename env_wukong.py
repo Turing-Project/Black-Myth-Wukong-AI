@@ -5,8 +5,8 @@ import time
 import matplotlib.pyplot as plt
 import directkeys as directkeys
 import numpy as np
-from grabscreen import grab_screen
-from getkeys import key_check
+from screen_key_grab.grabscreen import grab_screen
+from screen_key_grab.getkeys import key_check
 from restart import restart
 
 class Wukong(object):
