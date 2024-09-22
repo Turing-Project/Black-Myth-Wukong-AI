@@ -6,7 +6,6 @@ Date: 2021-11-14 17:29:46
 LastEditors: Zhang
 LastEditTime: 2021-12-02 10:14:29
 '''
-import directkeys as directkeys
 import time
 import pyautogui
 def restart(initial = False):
