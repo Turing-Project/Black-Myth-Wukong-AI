@@ -1,0 +1,13 @@
+matplotlib==3.9.2
+numpy==2.1.1
+opencv_python==4.10.0.84
+pandas==2.2.3
+PyAutoGUI==0.9.54
+pykeyboard==0.1.5
+PyUserInput==0.1.10
+pywin32==306
+scikit_learn==1.5.2
+tensorboardX==2.6.2.2
+tensorboardX==2.6.2.2
+torch==2.3.1+cu118
+torchdiffeq==0.2.4

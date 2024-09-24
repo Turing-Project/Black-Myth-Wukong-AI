@@ -1,0 +1,68 @@
+{
+    "env_name": "sekiro",
+    "sub_path": "sekiro",
+    "env_short_name": "sekiro",
+    "is_game": true,
+    "skill_registry_name": "cradle.environment.sekiro.skill_registry.sekiroSkillRegistry",
+    "ui_control_name": "cradle.environment.sekiro.ui_control.sekiroUIControl",
+    "task_description_list": [
+        {
+            "id": 1,
+            "task_description": "Go along the road and find a small temple.Press E near the temple to enter the menu to take a rest. If there is menu on the left side, perform skill named enter the temple",
+            "sub_task_description_list": []
+        }
+    ],
+    "skill_configs": {
+        "skill_names_basic": [
+            "enter_the_temple",
+            "take_a_rest"
+        ],
+        "skill_names_deny": [
+        ],
+        "skill_names_allow": [
+            "enter_the_temple",
+            "take_a_rest"
+        ],
+        "skill_names_movement": [
+            "enter_the_temple",
+            "take_a_rest"
+        ],
+        "skill_names_map": [
+        ],
+        "skill_names_trade": [
+            "enter_the_temple",
+            "take_a_rest"
+        ]
+    },
+    "planner_params": {
+        "__check_list__": [
+            "action_planning",
+            "information_gathering",
+            "success_detection",
+            "self_reflection",
+            "task_inference",
+            "information_text_gathering"
+        ],
+        "prompt_paths": {
+                "inputs": {
+                    "action_planning": "./res/sekiro/prompts/inputs/action_planning.json",
+                    "information_gathering": "./res/sekiro/prompts/inputs/information_gathering.json",
+                    "success_detection": "./res/sekiro/prompts/inputs/success_detection.json",
+                    "self_reflection": "./res/sekiro/prompts/inputs/self_reflection.json",
+                    "task_inference": "./res/sekiro/prompts/inputs/task_inference.json",
+                    "information_text_gathering": "./res/sekiro/prompts/inputs/information_text_gathering.json"
+                },
+                "templates": {
+                    "action_planning": "./res/sekiro/prompts/templates/action_planning.prompt",
+                    "information_gathering": "./res/sekiro/prompts/templates/information_gathering.prompt",
+                    "success_detection": "./res/sekiro/prompts/templates/success_detection.prompt",
+                    "self_reflection": "./res/sekiro/prompts/templates/self_reflection.prompt",
+                    "task_inference": "./res/sekiro/prompts/templates/task_inference.prompt",
+                    "information_text_gathering": "./res/sekiro/prompts/templates/information_text_gathering.prompt"
+                }
+        }
+    },
+    "provider_configs": {
+    }
+}
+
