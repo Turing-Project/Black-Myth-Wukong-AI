@@ -1,11 +1,3 @@
-'''
-Description: 
-Version: 2.0
-Autor: Zhang
-Date: 2021-11-14 17:29:46
-LastEditors: Zhang
-LastEditTime: 2021-12-02 10:14:29
-'''
 import time
 import pyautogui
 def restart(initial = False):
