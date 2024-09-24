@@ -10,7 +10,7 @@ AI demo for playing ARPG/Soul-like game with RL frame
 
 ## 游戏键位设置
 
-将J设置为轻攻击，M设置为重攻击，O位加速跑，K为闪避。
+将J设置为轻攻击，M设置为重攻击，O为加速跑，K为闪避。
 
 ## 其他
 
